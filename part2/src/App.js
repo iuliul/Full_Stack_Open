@@ -1,10 +1,13 @@
 import React from 'react';
 
 const Course = ({ course }) => {
+  const totalExercises = course.parts.reduce((sum, part) => sum + part.exercises, 0);
+
   return (
     <div>
       <Header name={course.name} />
       <Content parts={course.parts} />
+      <TotalExercises total={totalExercises} />
     </div>
   );
 };
@@ -29,6 +32,10 @@ const Part = ({ part }) => {
       {part.name} - {part.exercises} exercises
     </p>
   );
+};
+
+const TotalExercises = ({ total }) => {
+  return <p><strong>Total exercises: {total}</strong></p>;
 };
 
 const App = () => {
