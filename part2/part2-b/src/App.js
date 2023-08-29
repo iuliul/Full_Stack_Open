@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]);
-
+const PhonebookApp = () => {
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/persons')
+      .then(response => {
+        setPersons(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
 
   const handleNameChange = (event) => {
     setNewName(event.target.value);
@@ -20,53 +24,47 @@ const App = () => {
     setNewNumber(event.target.value);
   };
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const addPerson = (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to the phonebook.`);
-    } else {
-      const newPerson = { name: newName, number: newNumber, id: persons.length + 1 };
-      setPersons([...persons, newPerson]);
-      setNewName('');
-      setNewNumber('');
-    }
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+    };
+
+    axios.post('http://localhost:3000/persons', newPerson)
+      .then(response => {
+        setPersons([...persons, response.data]);
+        setNewName('');
+        setNewNumber('');
+      })
+      .catch(error => {
+        console.error('Error adding person:', error);
+      });
   };
 
   return (
     <div>
-      <h2>Phonebook</h2>
-      <div>
-        filter shown with: <input value={searchTerm} onChange={handleSearchChange} />
-      </div>
-      <h3>Add a new</h3>
-      <form onSubmit={addPerson}>
+      <h1>Phonebook</h1>
+      <form onSubmit={handleSubmit}>
         <div>
-          name: <input value={newName} onChange={handleNameChange} />
+          Name: <input value={newName} onChange={handleNameChange} />
         </div>
         <div>
-          number: <input value={newNumber} onChange={handleNumberChange} />
+          Number: <input value={newNumber} onChange={handleNumberChange} />
         </div>
         <div>
-          <button type="submit">add</button>
+          <button type="submit">Add</button>
         </div>
       </form>
       <h2>Numbers</h2>
       <ul>
-        {persons
-          .filter(person => person.name.toLowerCase().includes(searchTerm.toLowerCase()))
-          .map(person => (
-            <li key={person.id}>
-              {person.name} - {person.number}
-            </li>
-          ))}
+        {persons.map(person => (
+          <li key={person.id}>{person.name} - {person.number}</li>
+        ))}
       </ul>
     </div>
   );
-}
+};
 
-export default App;
+export default PhonebookApp;
